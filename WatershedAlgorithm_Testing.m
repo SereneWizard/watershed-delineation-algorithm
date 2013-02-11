@@ -201,14 +201,14 @@ ylabel('Y (row)')
 title(strcat(['Filled Flow Direction: ', int2str(rain_duration),'-Hour, ',int2str(rain_depth),'-Inch Rainfall Event']))
 %saveas(7, strcat(file_name,'PitsFilledFlowDir',int2str(rain_dep),'in.jpg'))
 
-% figure(8);
-% quiver(fill_vector_field.X, fill_vector_field.Y, fill_vector_field.U, fill_vector_field.V)
-% axis equal
-% set(gca,'YDir','reverse');
-% xlabel('X (column)')
-% ylabel('Y (row)')
-% title (strcat(['Filled Flow Direction']))
-% %saveas(7, strcat(file_name,'FlowDirection.jpg'));
+figure(8);
+quiver(fill_vector_field.X, fill_vector_field.Y, fill_vector_field.U, fill_vector_field.V)
+axis equal
+set(gca,'YDir','reverse');
+xlabel('X (column)')
+ylabel('Y (row)')
+title (strcat('Filled Flow Direction'))
+%saveas(7, strcat(file_name,'FlowDirection.jpg'));
 
 % figure(9);
 % imagesc(fill_flow_accum)
@@ -244,6 +244,6 @@ title(strcat(['Filled DEM: ', int2str(rain_duration),'-Hour, ',int2str(rain_dept
 % ylabel('Y (row)')
 % title(strcat(['Fill Amount by a ', int2str(rain_dur),'-Hour ',int2str(rain_dep/0.0254),'Inch Rainfall Event']))
 % saveas(10, strcat(name,'PitsFilled.jpg'))
-fill_vis_time = toc(fill_vis_tic)
+fill_vis_time = toc(fill_vis_tic);
 algorithm_time = toc(algorithm_tic);
 disp(strcat(['Complete algorithm run: ', num2str(algorithm_time./60), ' minutes']))
