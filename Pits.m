@@ -1,4 +1,4 @@
-function[pits, pit_data] = Pits(dem, drainage, flow_direction, cellsize, intensity)
+function[pits, pit_data, color_map] = Pits(dem, drainage, flow_direction, cellsize, intensity)
 %This function identifies each unique pit with an ID number, creates a map
 %so each pit may be displayed with a different color, and generates a
 %matrix of pit data. Each pit is in a different row, and each row contains
@@ -139,6 +139,9 @@ for list_idx = 1 : numel(list_of_pit_indices)
     % Update pit id to a new one for the next time
     cur_pit_id = cur_pit_id + 1;
 end
+% Set up original pits colormap
+color_map = [0 0 0; cell2mat(pit_data(:, COLOR))];
+
 pit_data_time = toc(tic_pit_data);
 disp(strcat(['Gathering the pit_data matrix: ', num2str(mean(pit_data_time)), ' seconds']))
 disp(strcat(['Average time to find pit indices: ', num2str(mean(pit_indices_time)), ' seconds']))
