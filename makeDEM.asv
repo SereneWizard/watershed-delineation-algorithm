@@ -57,12 +57,10 @@ dem = dem_sum./dem_count; %average for each grid cell from running sum and count
 % round elevation values to nearest cm
 dem = round(dem*100)/100;
 
-georef_info = maprasterref;
-georef_info.XLimWorld = [xmin, xmax];
-georef_info.YLimWorld = [ymin, ymax];
-georef_info.RasterSize = size(dem);
-georef_info.RasterInterpretation = 'cells';
-georef_info.ColumnsStartFrom = 'north';
-georef_info.RowsStartFrom = 'west';
-
-geotiffwrite('testtiff.tif', dem, georef_info,'CoordRefSysCode', 26916);
+R = rasterref;
+R.XLimWorld = [xmin, xmax]
+R.YLimWorld = [ymin, ymax]
+R.RasterSize = size(dem);
+R.RasterInterpretation = 'cells';
+R.ColumnsStartFrom = 'north';
+R.RowsStartFrom = 'west';

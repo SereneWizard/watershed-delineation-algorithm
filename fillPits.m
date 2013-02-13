@@ -90,49 +90,26 @@ while sort_pit_data{1, SPILLOVER_TIME} < rainfall_duration
         break
     end
     
-%     if pre_merger_max_ID ~= current_max_ID
-%         % If the maximum ID changed (e.i. two non-0 pits merged), then
-%         % get the color of the new merged pit and add it to the end of
-%         % the colormap list. The color map is a matrix with each row
-%         % being an array [R,G,B] for each pit ID.  The pits count up
-%         % successively and never repeat. As the next count is reached,
-%         % another row is added to the colormap.
-%         max_ID_row_idx = find(cell2mat(sort_pit_data(:, PIT_ID)) == current_max_ID);
-%         color_map(current_max_ID, :) = cell2mat(sort_pit_data(max_ID_row_idx, COLOR));
-%         color_map_idx = color_map_idx + 1;
-%     elseif pre_merger_max_ID ~= max(cell2mat(sort_pit_data(:,PIT_ID)))
-%         % Otherwise, the first pit (in time-sorted order)merged with an ID
-%         % 0 pit. If that first pit was the current maximum ID #, that color
-%         % should be removed from the colormap list.
-%         removed_first_pit_color_idx = find(ismember(color_map, removed_first_pit_color, 'rows'));
-%         color_map(removed_first_pit_color_idx, :) = [];
-%     end
-%     figure(6);
-%     imagesc(fill_pits);
-%     colormap(color_map(~any(isnan(color_map),2),:));
-%     axis equal;
-%     xlabel('X (column)');
-%     ylabel('Y (row)');
-%     title(strcat(['Pits: ', int2str(rainfall_duration),'-Hour, ',int2str(rainfall_depth),'-Inch Rainfall Event']))
+    if pre_merger_max_ID ~= current_max_ID
+        % If the maximum ID changed (e.i. two non-0 pits merged), then
+        % get the color of the new merged pit and add it to the end of
+        % the colormap list. The color map is a matrix with each row
+        % being an array [R,G,B] for each pit ID.  The pits count up
+        % successively and never repeat. As the next count is reached,
+        % another row is added to the colormap.
+        max_ID_row_idx = find(cell2mat(sort_pit_data(:, PIT_ID)) == current_max_ID);
+        color_map(current_max_ID, :) = cell2mat(sort_pit_data(max_ID_row_idx, COLOR));
+        color_map_idx = color_map_idx + 1;
+    end
+    
+    figure(6);
+    imagesc(fill_pits);
+    colormap(color_map(1:1+max(max(fill_pits)),:));
+    axis equal;
+    xlabel('X (column)');
+    ylabel('Y (row)');
+    title(strcat(['Pits: ', int2str(rainfall_duration),'-Hour, ',int2str(rainfall_depth),'-Inch Rainfall Event']))
 
-%     Stop and wait for key press or mouse click. 
-%     w = waitforbuttonpress;
-%     if w == 0
-%         continue;
-%     else
-%         continue;
-%     end
-    % plot pits based on given time step
-%     if sort_pit_data(1, 10) > time
-%         time = time + 1; % set time for next frame to be plotted
-%         figure(6);
-%         imagesc(fill_pits)
-%         colormap(color_map)
-%         axis equal
-%         xlabel('X (column)')
-%         ylabel('Y (row)')
-%         title(strcat('Pits: Pits Remaining by a ', int2str(rain_dur),'-Hour ',int2str(rain_dep/0.0254),'Inch Rainfall Event (',int2str(cellsize),'m Spacing)'))
-%     end
 filling_vis_time(cur_merger) = toc(filling_vis); % PROFILING
 cur_merger = cur_merger + 1;
 end
