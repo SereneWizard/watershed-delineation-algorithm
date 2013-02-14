@@ -45,15 +45,12 @@ NET_ACCUMULATION_RATE = 18;
 pits = zeros(size(flow_direction)); % matrix identifying pits (pit map)
 pit_data = num2cell(nan(sum(sum(flow_direction < 0)), 18)); % matrix of data for each pit
 list_of_pit_indices = nan(sum(sum(flow_direction < 0)), 1);
-pit_indices_time = zeros(sum(sum(flow_direction < 0)), 1);
-border_time = zeros(sum(sum(flow_direction < 0)), 1);
 
 cur_pit_id = 1; % initialize pit numbering
 
 % Pits must first be identified in the pit matrix in order to return the
 % correct pit ID that each pit flows into (if not, many of these pits will
 % flow into yet unidentified pits that have ID 0).
-tic_pits_ID = tic;
 for cell = 1 : numel(pits)
     if flow_direction(cell) < 0 % check to see that it is pit
         % add current cell to list of pit indices
@@ -62,9 +59,7 @@ for cell = 1 : numel(pits)
         % Identify those cells which flow into the pit
         current_pit = pit_data(cur_pit_id, :);
         current_pit{ALL_INDICES} = [];
-        all_ind_tic = tic;
         [current_pit{ALL_INDICES}] = findCellsDrainingToPoint(flow_direction, cell, current_pit{ALL_INDICES});
-        pit_indices_time(cur_pit_id) = toc(all_ind_tic);
         pits(current_pit{ALL_INDICES}) = cur_pit_id;
         
         % place current_pit back into pit_data matrix
@@ -76,11 +71,7 @@ for cell = 1 : numel(pits)
         pits(cell) = 0;
     end
 end
-pits_ID_time = toc(tic_pits_ID);
-disp(strcat(['IDing the pits and pit_data{ALL_INDICES}: ', num2str(pits_ID_time), ' seconds']))
 
-
-tic_pit_data = tic;
 cur_pit_id = 1;% re-initialize pit numbering for the pit_data matrix
 % Gather pit_data for each pit
 for list_idx = 1 : numel(list_of_pit_indices)
@@ -99,9 +90,7 @@ for list_idx = 1 : numel(list_of_pit_indices)
     
     % Find boundary edge-related information about the pit. This
     % includes internal borders of fully-surrounded polygons.
-    border_tic = tic;
     [ret1, ret2, ret3, ret4, ret5, ret6, ret7] = findBorderData(current_pit{ALL_INDICES}, dem, pits);
-    border_time(cur_pit_id) = toc(border_tic);
     current_pit{MIN_OUTSIDE_EDGE_ELEVATION} = ret1;
     current_pit{MIN_INSIDE_EDGE_ELEVATION} = ret2;
     current_pit{SPILLOVER_ELEVATION} = ret3;
@@ -114,36 +103,26 @@ for list_idx = 1 : numel(list_of_pit_indices)
     current_pit{CELLS_TO_BE_FILLED_COUNT} = nnz(dem(current_pit{ALL_INDICES}) < current_pit{SPILLOVER_ELEVATION});
     current_pit{VOLUME} = findVolume(cellsize, dem, current_pit{ALL_INDICES}, current_pit{SPILLOVER_ELEVATION}, current_pit{CELLS_TO_BE_FILLED_COUNT}, 0);
     current_pit{SPILLOVER_TIME} = current_pit{VOLUME}/((cellsize^2).*current_pit{NET_ACCUMULATION_RATE});
-    if current_pit{NET_ACCUMULATION_RATE} == 0
-        %disp(strcat(['drainage rate:', num2str(current_pit{NET_ACCUMULATION_RATE})]))
-        %disp(strcat(['spillover time:', num2str(current_pit{SPILLOVER_TIME})]))
+    % If the pit is not accumulating flow, set time equal to Inf rather
+    % than allowing negative values. Negative values will be minima when
+    % sorting the pits based on spillover time. Instead, these pits will
+    % not be the first to overflow, but rather will only enguage in a
+    % merging operation when another pit overflows into them.
+    if current_pit{NET_ACCUMULATION_RATE} <= 0
         current_pit{SPILLOVER_TIME} = Inf;
     end
-    if current_pit{NET_ACCUMULATION_RATE} < 0
-        %disp(strcat(['drainage rate:', num2str(current_pit{NET_ACCUMULATION_RATE})]))
-        %if current_pit{SPILLOVER_TIME} < 0
-            %disp(strcat(['spillover time:', num2str(current_pit{SPILLOVER_TIME})]))
-        %end
-        current_pit{SPILLOVER_TIME} = Inf;
-    end
-
-
-
+    
+    % Filling has not begun
     current_pit{FILLED_VOLUME} = 0;
     
-    % Assign a random colormap value to this pit.
+    % Assign a random colormap value to this pit (avoiding dark colors).
     current_pit{COLOR} = 0.3 + (rand(1,3).*(1-.3));
     
     % place current_pit back into pit_data matrix
     pit_data(cur_pit_id, :) = current_pit;
-    % Update pit id to a new one for the next time
+    % Increment pit id for the any additional pits
     cur_pit_id = cur_pit_id + 1;
 end
 % Set up original pits colormap
 color_map = [0 0 0; cell2mat(pit_data(:, COLOR))];
-
-pit_data_time = toc(tic_pit_data);
-disp(strcat(['Gathering the pit_data matrix: ', num2str(mean(pit_data_time)), ' seconds']))
-disp(strcat(['Average time to find pit indices: ', num2str(mean(pit_indices_time)), ' seconds']))
-disp(strcat(['Average time to find border data: ', num2str(mean(border_time)), ' seconds']))
 end

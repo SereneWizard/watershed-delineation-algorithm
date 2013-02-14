@@ -87,7 +87,7 @@ if second_pit_ID ~= 0
         new_pit{SPILLOVER_TIME} = Inf;
     end    
     
-    % Take the color of the pit with which the first is merging.
+    % Take the color of the larger pit with which the first is merging.
     new_pit{COLOR} = second_pit{COLOR};
 
     % Replace the first pit sort_pit_data entry with the new pit
@@ -96,6 +96,7 @@ if second_pit_ID ~= 0
     % Remove second pits from list.
     sort_pit_data(second_pit_row_idx,:) = [];
         
+    zero_merge = 0;
 % Otherwise, the first pit is merging with pit 0: it is flowing out of the
 % map.
 else
@@ -103,18 +104,24 @@ else
     % represent filling the first pit.
     puddle_dem(fill_pits == first_pit_ID & fill_dem < first_pit{SPILLOVER_ELEVATION}) = NaN;
     fill_dem(fill_pits == first_pit_ID & fill_dem < first_pit{SPILLOVER_ELEVATION}) = first_pit{SPILLOVER_ELEVATION};
+    zero_merge_time.fill_dem = [zero_merge_time.fill_dem; toc(fill_dem_tic)];% PROFILING 
     
     % Replace first pit ID in the pits matrix with pit ID 0.
     new_pit_ID = 0;
+    pits_tic = tic; % PROFILING 
     fill_pits(first_pit{ALL_INDICES}) = new_pit_ID;
+    zero_merge_time. pits = [zero_merge_time.pits; toc(pits_tic)]; % PROFILING
 
+    cleanup_tic = tic;
     % Remove first pit from list.
     sort_pit_data(1, :) = [];
     
+    zero_merge = 1;
 end
+if zero_merge == 1
     % Reverse flow out of the overflowing pit so that flow_direction now
     % correctly shows flow
-    fill_flow_direction = reverseFlowOutOfPit(fill_flow_direction, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
+    %fill_flow_direction = reverseFlowOutOfPit(fill_flow_direction, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
     
     % All pits that spill over into the first or second pit now spill over
     % into the new pit (be it pit 0 or the new, merged pit)
@@ -123,4 +130,21 @@ end
     
     % Resort the sort_pit_data matrix after the pit merger changes
     sort_pit_data = sortrows(sort_pit_data, SPILLOVER_TIME);
+    zero_merge_time.cleanup = [zero_merge_time.cleanup; toc(cleanup_tic)]; % PROFILING
+    zero_merge_time.totals = [zero_merge_time.totals; toc(merge_tic)]; % PROFILING
+elseif zero_merge == 0
+    % Reverse flow out of the overflowing pit so that flow_direction now
+    % correctly shows flow
+    %fill_flow_direction = reverseFlowOutOfPit(fill_flow_direction, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
+    
+    % All pits that spill over into the first or second pit now spill over
+    % into the new pit (be it pit 0 or the new, merged pit)
+    indices = cell2mat(sort_pit_data(:, SPILLOVER_PIT_ID)) == first_pit_ID | cell2mat(sort_pit_data(:,SPILLOVER_PIT_ID)) == second_pit_ID;
+    sort_pit_data(indices, SPILLOVER_PIT_ID) = {new_pit_ID};
+    
+    % Resort the sort_pit_data matrix after the pit merger changes
+    sort_pit_data = sortrows(sort_pit_data, SPILLOVER_TIME);
+    non_zeros_merge_time.cleanup = [non_zeros_merge_time.cleanup; toc(cleanup_tic)]; % PROFILING
+    non_zeros_merge_time.totals = [non_zeros_merge_time.totals; new_pit{AREA_CELL_COUNT}, toc(merge_tic)]; % PROFILING
+end
 end

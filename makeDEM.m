@@ -1,4 +1,4 @@
-function [dem,numrows,numcols] = makeDEM(data, cellsize)
+function [georef_info, dem] = makeDEM(data, cellsize)
 % COMMENT ME: describe data format
 % data = [x-coords in UTM projection (meters), y-coords in UTM 
 xmax = max(data(:,1));
@@ -55,7 +55,7 @@ dem = dem_sum./dem_count; %average for each grid cell from running sum and count
 % rmse = (rmse_sum/rmse_count)^0.5;
 
 % round elevation values to nearest cm
-dem = round(dem*100)/100;
+dem = round(dem*1000)/1000;
 
 georef_info = maprasterref;
 georef_info.XLimWorld = [xmin, xmax];
@@ -64,5 +64,3 @@ georef_info.RasterSize = size(dem);
 georef_info.RasterInterpretation = 'cells';
 georef_info.ColumnsStartFrom = 'north';
 georef_info.RowsStartFrom = 'west';
-
-geotiffwrite('testtiff.tif', dem, georef_info,'CoordRefSysCode', 26916);

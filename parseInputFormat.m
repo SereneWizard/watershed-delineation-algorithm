@@ -1,6 +1,7 @@
-function[dem, drainage, flow_direction_key, flow_accumulation_key, pits_key, fill_dem_key, fill_flow_direction_key, fill_flow_accumulation_key, fill_pits_key, perform_error_checks, cellsize] = parseInputFormat(input_name, cellsize)
+function[georef_info, dem, drainage, flow_direction_key, flow_accumulation_key, pits_key, fill_dem_key, fill_flow_direction_key, fill_flow_accumulation_key, fill_pits_key, perform_error_checks, cellsize] = parseInputFormat(input_name, cellsize)
 % Identify the format of the input file/name and parse it appropriately.
 
+georef_info = [];
 drainage = [];
 flow_direction_key = [];
 flow_accumulation_key = [];
@@ -62,20 +63,14 @@ if ~isempty(regexpi(input_name, '.las')) % non-case-sensitive matching
     data = readLASFile(input_name);
     input_name(1:length(input_name)-4)
     save(input_name(1:length(input_name)-4), 'data');
-    dem_tic = tic;
-    dem = makeDEM(data, cellsize);
-    dem_time = toc(dem_tic);
-    disp(strcat(['Make DEM: ', num2str(dem_time), ' seconds']))
+    dem = makeDEM(georef_info, data, cellsize);
     return;
 end
 
 % Otherwise, the input name is to be taken as the name of a lidar data
 % variable.
 load(input_name, 'data');
-dem_tic = tic;
-dem = makeDEM(data, cellsize);
-dem_time = toc(dem_tic);
-disp(strcat(['Make DEM: ', num2str(dem_time), ' seconds']))
+[georef_info, dem] = makeDEM(data, cellsize);
 return;
 
 end
