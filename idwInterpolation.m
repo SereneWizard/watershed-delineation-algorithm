@@ -47,5 +47,7 @@ for cell = 1: numel(dem)
         end
     end
 end
+% round elevation values to nearest cm
+dem = round(dem*100)/100;
 %strcat('The total number of cells interpolated: ',num2str(nan_count))
 end

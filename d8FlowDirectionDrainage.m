@@ -7,7 +7,7 @@ numrows = size(flow_direction, 1);
 numcols = size(flow_direction, 2);
 equal_slopes = 0;
 negative_slopes = 0;
-
+count = 0;
 for current_element = 1 : numel(flow_direction)
     % convert to row (r) and column (c) indices
     [r, c] = ind2sub(size(flow_direction), current_element);
@@ -72,6 +72,7 @@ for current_element = 1 : numel(flow_direction)
     
     if min_slope == 0 && ~isnan(first_zero_slope_neighbor)
         flow_direction(current_element) = first_zero_slope_neighbor;
+        count= count+1;
     elseif min_slope >= 0
         flow_direction(current_element) = -1;
     end

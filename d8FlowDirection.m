@@ -19,9 +19,9 @@ for current_element = 1 : numel(flow_direction)
             if x == 0 && y ==0 % skip center (target) cell of 3x3 neighborhood
                 continue;
             end
-            if r+y > numrows || r+y < 1 || c+x > numcols || c+x < 1
-                continue; % skip neighbors outside the matrix range
-            end
+%             if r+y > numrows || r+y < 1 || c+x > numcols || c+x < 1
+%                 continue; % skip neighbors outside the matrix range
+%             end
             % Convert from cartesian to polar coordinates to get flow
             % direction angle (radians) and distance from center cell to
             % neighbor (1 for top,bot,left,right, and sqrt(2) for

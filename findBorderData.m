@@ -8,7 +8,9 @@ function[min_outside_border, min_inside_border, spillover_elevation, pit_outlet_
 % indices (the list of border indices of the two merging pits) where the
 % cells that connect the two pits are no longer along the border of the new
 % pit. This should be faster than passing the entire list of new pit
-% indices to this function as was done in the Pits function.
+% indices to this function as was done in the Pits function. the operation
+% of this function also includes interior borders if a different pit is
+% contained within the current pit.
 
 [numrows, numcols] = size(pits);
 
@@ -39,7 +41,7 @@ for idx = numel(indices_draining_to_desired_cell):-1:1
             
             % If the neighbor is outside the pit, the border has been
             % reached.
-            if pits(r+y, c+x) ~= pits(indices_draining_to_desired_cell(idx))
+            if pits(r+y, c+x) ~= pits(current_cell)
                  % if minimum ridge elevation value is still NaN from
                  % initialization or if the ridge elevations (in and the
                  % neighbor just out of the pit) are BOTH less than the current
