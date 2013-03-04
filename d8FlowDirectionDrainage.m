@@ -1,7 +1,14 @@
 function [flow_direction] = d8FlowDirectionDrainage(dem, drainage, intensity)
+% This function evaluates the DEM and determines the D8 flow direction for
+% each cell. Instead of using the powers of two for each of the eight
+% neighors or simply 1-8, an angle was used such that it may be possible in
+% the future to implement D-Infinity or other multiple outflow direction
+% models.
+
 % Initialize flow direction as a matrix of -1s. Borders will become NaNs,
-% valid flow directions will range from 0 to 2pi (hence why initializing a
-% matrix full of zeros or NaNs may be confusing).
+% valid flow directions will range from 0 to 2pi (initializing a matrix
+% full of zeros or NaNs may be prohibitive to tests as to whether a cell
+% is ).
 flow_direction = ones(size(dem)).*-3;
 numrows = size(flow_direction, 1);
 numcols = size(flow_direction, 2);
@@ -15,6 +22,8 @@ for current_element = 1 : numel(flow_direction)
         flow_direction(current_element) = NaN;
         continue;
     end
+    % If the element is draining faster than accumulation then the cell is
+    % a pit (given a -2 to denote this circumstance)
     if drainage(current_element) <= intensity
         flow_direction(current_element) = -2;
     end

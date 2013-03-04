@@ -114,13 +114,14 @@ else
 end
     % Reverse flow out of the overflowing pit so that flow_direction now
     % correctly shows flow
-    fill_flow_direction = reverseFlowOutOfPit(fill_flow_direction, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
+    %fill_flow_direction = reverseFlowOutOfPit(fill_flow_direction, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
     
     % All pits that spill over into the first or second pit now spill over
     % into the new pit (be it pit 0 or the new, merged pit)
     indices = cell2mat(sort_pit_data(:, SPILLOVER_PIT_ID)) == first_pit_ID | cell2mat(sort_pit_data(:,SPILLOVER_PIT_ID)) == second_pit_ID;
     sort_pit_data(indices, SPILLOVER_PIT_ID) = {new_pit_ID};
-    
+    fill_flow_direction = resolveFlatD8FlowDirection(fill_flow_direction, fill_dem, first_pit{ALL_INDICES}, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
+
     % Resort the sort_pit_data matrix after the pit merger changes
     sort_pit_data = sortrows(sort_pit_data, SPILLOVER_TIME);
 end

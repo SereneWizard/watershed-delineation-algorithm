@@ -1,4 +1,4 @@
-function[fill_dem, puddle_dem, fill_flow_dir, fill_pits, sort_pit_data] = fillPits(dem, flow_direction, pits, pit_data, rainfall_duration, rainfall_depth, cellsize, color_map)
+function[fill_dem, puddle_dem, fill_flow_direction, fill_pits, sort_pit_data] = fillPits(dem, flow_direction, pits, pit_data, rainfall_duration, rainfall_depth, cellsize, color_map)
 % rename for clarity
 SPILLOVER_TIME = 10;
 PIT_ID = 12;
@@ -7,7 +7,7 @@ COLOR = 15;
 % Initialize the products that will change as pits are filled.
 fill_dem = dem;
 puddle_dem = dem;
-fill_flow_dir = flow_direction;
+fill_flow_direction = flow_direction;
 fill_pits = pits;
 
 % Chronologically order pits according to spillover time and initialize the
@@ -25,7 +25,6 @@ color_map = [color_map; nan(potential_merges, 3)];
 % have same spillover time).
 total_fill_count = 0;
 simultaneous_fill_count = 0;
-
 cur_merger = 1;
 color_map_idx = 1;
 spillover_time_list = nan(potential_merges,1);
@@ -39,11 +38,11 @@ while sort_pit_data{1, SPILLOVER_TIME} < rainfall_duration
             simultaneous_fill_count = simultaneous_fill_count + 1;
         end
     end
+    
     % call pit-merging/filling function
-    pre_merger_max_ID = current_max_ID;
-%    removed_first_pit_color = sort_pit_data{1, COLOR};
-    [fill_dem, puddle_dem, fill_flow_dir, fill_pits, sort_pit_data, current_max_ID] = mergePits(fill_dem, puddle_dem, fill_flow_dir, fill_pits, sort_pit_data, cellsize, current_max_ID);
-
+    pre_merger_max_ID = current_max_ID;        
+    [fill_dem, puddle_dem, fill_flow_direction, fill_pits, sort_pit_data, current_max_ID] = mergePits(fill_dem, puddle_dem, fill_flow_direction, fill_pits, sort_pit_data, cellsize, current_max_ID);
+        
     % Check to see if all pits have been merged.
     if isempty(sort_pit_data)
         break
@@ -71,10 +70,10 @@ while sort_pit_data{1, SPILLOVER_TIME} < rainfall_duration
 
 cur_merger = cur_merger + 1;
 end
-
 figure(12);
 hist(spillover_time_list,50);
 
+%zero_pit_count
 
 disp(strcat([int2str(total_fill_count), ' total pit fills']))
 end

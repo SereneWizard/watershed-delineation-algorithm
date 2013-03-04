@@ -22,6 +22,8 @@ function[pits, pit_data, color_map] = Pits(dem, drainage, flow_direction, cellsi
 % 15) colormap for display purposes
 % 16) list of indices that are part of the pit
 % 17) list of indices along the borders of the pit
+% 18) net accumulation rate
+
 PIT_BOTTOM_ELEVATION = 1;
 MIN_OUTSIDE_EDGE_ELEVATION = 2;
 MIN_INSIDE_EDGE_ELEVATION = 3;
