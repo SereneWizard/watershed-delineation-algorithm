@@ -5,16 +5,18 @@ function [flow_direction] = d8FlowDirectionDrainage(dem, drainage, intensity)
 % the future to implement D-Infinity or other multiple outflow direction
 % models.
 
-% Initialize flow direction as a matrix of -1s. Borders will become NaNs,
-% valid flow directions will range from 0 to 2pi (initializing a matrix
-% full of zeros or NaNs may be prohibitive to tests as to whether a cell
-% is ).
+% Initialize flow direction as a matrix of -3s. Borders will become NaNs,
+% pits resulting from flow direction will be -1, pits resulting from
+% excessive drainage rates will be denoted -2 in case this exception
+% becomes important, and valid flow directions will range from 0 to 2pi
+% (initializing a matrix full of zeros or NaNs may make tests as to whether
+% a cell is part of a pit or has yet to be visited unclear if these values
+% have multiple identities).
 flow_direction = ones(size(dem)).*-3;
 numrows = size(flow_direction, 1);
 numcols = size(flow_direction, 2);
 equal_slopes = 0;
 negative_slopes = 0;
-count = 0;
 for current_element = 1 : numel(flow_direction)
     % convert to row (r) and column (c) indices
     [r, c] = ind2sub(size(flow_direction), current_element);
@@ -23,7 +25,7 @@ for current_element = 1 : numel(flow_direction)
         continue;
     end
     % If the element is draining faster than accumulation then the cell is
-    % a pit (given a -2 to denote this circumstance)
+    % a pit (given a -2 to denote this special case).
     if drainage(current_element) <= intensity
         flow_direction(current_element) = -2;
     end
@@ -53,7 +55,7 @@ for current_element = 1 : numel(flow_direction)
             end
             
             % Maintain current minimum slope
-            if (isnan(min_slope) || slope <= min_slope) % nan on first iteration or if <= than current minimum
+            if (isnan(min_slope) || slope <= min_slope) % nan on first iteration
                 min_slope = slope;
                 % Record for that cell of the flow_direction matrix the
                 % angle of the new minimum slope. Taking the modulo of the
@@ -61,17 +63,21 @@ for current_element = 1 : numel(flow_direction)
                 % radians rather than allowing negative angles.
                 flow_direction(current_element) = mod(angle, 2*pi);
                 
+                % The following serves to group adjacent multi-cell flat
+                % pit-bottoms such that numerous adjacent single-cell pits
+                % are eliminated. 
+                %
                 % If the minimum slope is 0 (flat pit bottom), BUT the
-                % neighbor which is of the same elevation has a
-                % legitimately known flow direction (neither along a
-                % border(NaN) nor a pit or yet undetermined(-1)), then
-                % allow the current cell to flow to the neighbor cell.
-                % Because the cells are not visited twice, if the a cell
-                % was first identified as a pit, then it will remain a pit
-                % such that an infinite loop of two cells flowing into one
-                % another will not occur. Record the first zero slope
-                % neighbor encountered and use that first neighbor as the
-                % direction to take if the minimum slope turns out to be 0.
+                % neighbor which is of the same elevation has a known
+                % non-pit flow direction (neither along a border(NaN) nor a
+                % pit or yet undetermined(-3:-1)), then allow the current
+                % cell to flow to the neighbor cell. Because the cells are
+                % not visited twice, if the cell was first identified as a
+                % pit, then it will remain a pit such that an infinite loop
+                % of two cells flowing into one another will be avoided.
+                % Record the first zero slope neighbor encountered and use
+                % that first neighbor as the direction to take if the
+                % minimum slope turns out to be 0.
                 if min_slope == 0 && flow_direction(r+y, c+x) > -2 && isnan(first_zero_slope_neighbor)
                     first_zero_slope_neighbor = mod(angle, 2*pi);
                 end
@@ -81,7 +87,6 @@ for current_element = 1 : numel(flow_direction)
     
     if min_slope == 0 && ~isnan(first_zero_slope_neighbor)
         flow_direction(current_element) = first_zero_slope_neighbor;
-        count= count+1;
     elseif min_slope >= 0
         flow_direction(current_element) = -1;
     end

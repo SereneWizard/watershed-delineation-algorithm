@@ -4,15 +4,6 @@ function[dem] = idwInterpolation(dem)
 %non-square projection or in patches of forest or buildings where ground
 %class points did not exist).
 
-% while nnz(isnan(dem)) > 0
-%     for cell = 1 : numel(dem)
-%         [r, c] = ind2sub(size(dem), cell); %convert to row and column indices
-%         if isnan(dem(cell))
-%             dem(cell) = idw(dem, r, c);
-%         end
-%     end
-% end
-
 numrows = size(dem, 1);
 numcols = size(dem, 2);
 

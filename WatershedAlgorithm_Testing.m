@@ -1,13 +1,17 @@
 %Inputs
 cellsize = 3; % DEM cellsize in meters
-rain_depth = 300; % in inches
-rain_duration = 24; % in hours
+rainfall_depth = 300; % in inches
+rainfall_duration = 24; % in hours
 
-intensity = (rain_depth*0.0254)/rain_duration; % convert depth to meters, and calculate intensity in meters per hour
+intensity = (rainfall_depth*0.0254)/rainfall_duration; % convert depth to meters, and calculate intensity in meters per hour
 
 drainage_off = 0; % Turn drainage on or off.  drainage_off = 1 means drainage IS off.
 
-input_name = 'AaronFieldNew';
+input_name = 'Home128';
+% Home128, AaronFieldSmall,BuckmasterRossville, DryCow61, Mont, HellHole,
+% CalowayCoondogMacy, CalowayChurchAccessRoad, CalowayBankRoadSouthMuck,
+% Smith30, Horn234, LakeAssociation20, Zone80, BootsPresselGrahamHome,
+% BigGroup
 
 %Determine input format and create DEM.
 [georef_info, dem, drainage, flow_direction_key, flow_accumulation_key, pits_key, fill_dem_key, fill_flow_direction_key, fill_flow_accumulation_key, fill_pits_key, perform_error_checks, cellsize] = parseInputFormat(input_name, cellsize);
@@ -16,7 +20,7 @@ input_name = 'AaronFieldNew';
 dem = idwInterpolation(dem);
 
 % Write a geotiff with UTM Z16N projection system reference code
-%geotiffwrite('testtiff.tif', dem, georef_info,'CoordRefSysCode', 26916);
+geotiffwrite(strcat(input_name, 'DEM', '.tif'), dem, georef_info,'CoordRefSysCode', 26916);
 figure(1);
 %subplot(1,2,1);
 imagesc(dem)
@@ -33,8 +37,8 @@ title ('Original DEM');
 % xlabel('');
 % ylabel('');
 % title ('Original DEM in UTM Z16N Coordinates');
-
 %saveas(2, strcat([file_name,' DEM.jpg']));
+
 %% Get Drainage Data
 if isempty(drainage)
     drainage = getDrainage(size(dem));
@@ -58,7 +62,7 @@ elseif drainage_off == 1
     flow_direction = d8FlowDirection(dem);
 end
 
-%geotiffwrite('testtifflow.tif', flow_direction, georef_info,'CoordRefSysCode', 26916);
+geotiffwrite(strcat(input_name, 'FlowDir', '.tif'), flow_direction, georef_info,'CoordRefSysCode', 26916);
 vector_field = flowDirectionVectorVisualization(flow_direction);
 
 if perform_error_checks
@@ -98,6 +102,7 @@ if perform_error_checks
     end
 end
 
+geotiffwrite(strcat(input_name, 'FlowAccum', '.tif'), flow_accumulation, georef_info,'CoordRefSysCode', 26916);
 figure(5);
 %subplot(1,2,2);
 imagesc(flow_accumulation);
@@ -118,7 +123,7 @@ if perform_error_checks
     end
 end
 
-%geotiffwrite('test_pits_tiff.tif', pits, georef_info,'CoordRefSysCode', 26916);
+geotiffwrite(strcat(input_name, 'OriginalPits', '.tif'), pits, georef_info,'CoordRefSysCode', 26916);
 figure(6);
 %subplot(1,3,3);
 imagesc(pits);
@@ -130,10 +135,15 @@ title ('Original Pits');
 %saveas(5, strcat(file_name,'PitIDs.jpg'));
 
 %% Fill Pits
-[fill_dem, puddle_dem, fill_flow_direction, fill_pits, sort_pit_data] = fillPits(dem, flow_direction, pits, pit_data, rain_duration, rain_depth, cellsize, color_map);
+[fill_dem, puddle_dem, fill_flow_direction, fill_pits, sort_pit_data] = fillPits(dem, flow_direction, pits, pit_data, rainfall_duration, rainfall_depth, cellsize, color_map);
+
+geotiffwrite(strcat(input_name, 'FillDEM', '.tif'), fill_dem, georef_info,'CoordRefSysCode', 26916);
+geotiffwrite(strcat(input_name, 'FillFlowDir', '.tif'), fill_flow_direction, georef_info,'CoordRefSysCode', 26916);
 
 [fill_vector_field] = flowDirectionVectorVisualization(fill_flow_direction);
 fill_flow_accumulation = flowAccumulation(fill_flow_direction);
+
+geotiffwrite(strcat(input_name, 'FillFlowAccum', '.tif'), fill_flow_accumulation, georef_info,'CoordRefSysCode', 26916);
 
 if perform_error_checks
     error = numel(fill_dem) - sum(sum(fill_dem == fill_dem_key));
@@ -165,7 +175,7 @@ imagesc(fill_dem)
 axis equal
 xlabel('X (column)')
 ylabel('Y (row)')
-title(strcat(['Filled DEM: ', int2str(rain_duration),'-Hour, ',int2str(rain_depth),'-Inch Rainfall Event']))
+title(strcat(['Filled DEM: ', int2str(rainfall_duration),'-Hour, ',int2str(rainfall_depth),'-Inch Rainfall Event']))
 %saveas(6, strcat(file_name,'PitsFilledDEM',int2str(rain_dep),'in.jpg'))
 
 figure(8);
@@ -174,7 +184,7 @@ imagesc(fill_flow_direction)
 axis equal
 xlabel('X (column)')
 ylabel('Y (row)')
-title(strcat(['Filled Flow Direction: ', int2str(rain_duration),'-Hour, ',int2str(rain_depth),'-Inch Rainfall Event']))
+title(strcat(['Filled Flow Direction: ', int2str(rainfall_duration),'-Hour, ',int2str(rainfall_depth),'-Inch Rainfall Event']))
 %saveas(7, strcat(file_name,'PitsFilledFlowDir',int2str(rain_dep),'in.jpg'))
 
 figure(8);
@@ -191,7 +201,7 @@ imagesc(fill_flow_accumulation)
 axis equal
 xlabel('X (column)')
 ylabel('Y (row)')
-title(strcat(['Flow Accumulation: Pits Filled by a ', int2str(rain_duration),'-Hour, ',int2str(rain_depth),'-Inch Rainfall Event']))
+title(strcat(['Flow Accumulation: Pits Filled by a ', int2str(rainfall_duration),'-Hour, ',int2str(rainfall_depth),'-Inch Rainfall Event']))
 % %saveas(8, strcat(file_name,'PitsFilledFlowAccum',int2str(rain_dep),'in.jpg'))
 
 figure(10);
@@ -200,7 +210,7 @@ colormap(color_map)
 axis equal
 xlabel('X (column)')
 ylabel('Y (row)')
-title(strcat(['Pits: ', int2str(rain_duration),'-Hour, ',int2str(rain_depth),'-Inch Rainfall Event']))
+title(strcat(['Pits: ', int2str(rainfall_duration),'-Hour, ',int2str(rainfall_depth),'-Inch Rainfall Event']))
 %saveas(9, strcat(file_name,'PitsFilled.jpg'))
 
 figure(11);
@@ -209,5 +219,17 @@ imagesc(puddle_dem)
 axis equal
 xlabel('X (column)')
 ylabel('Y (row)')
-title(strcat(['Filled DEM: ', int2str(rain_duration),'-Hour, ',int2str(rain_depth),'-Inch Rainfall Event']))
+title(strcat(['Filled DEM: ', int2str(rainfall_duration),'-Hour, ',int2str(rainfall_depth),'-Inch Rainfall Event']))
+%saveas(6, strcat(file_name,'PitsFilledDEM',int2str(rain_dep),'in.jpg'))
+
+%% Delineate Points
+delineateWatersheds(dem, fill_flow_direction, fill_flow_accumulation)
+
+figure(11);
+%subplot(1,2,1);
+imagesc(puddle_dem)
+axis equal
+xlabel('X (column)')
+ylabel('Y (row)')
+title(strcat(['Filled DEM: ', int2str(rainfall_duration),'-Hour, ',int2str(rainfall_depth),'-Inch Rainfall Event']))
 %saveas(6, strcat(file_name,'PitsFilledDEM',int2str(rain_dep),'in.jpg'))

@@ -58,12 +58,20 @@ if ~isempty(regexpi(input_name, 'image_example|.bmp')) % non-case-sensitive matc
     return;
 end
 
+% handle raw LiDAR point data in ASCII format
+if ~isempty(regexpi(input_name, '.txt')) % non-case-sensitive matching   
+    input_data = importdata(input_name, ',');
+    data = input_data.data(:,1:3);
+    save(input_name(1:length(input_name)-4), 'data');
+    [georef_info, dem] = makeDEM(data, cellsize);
+    return;
+end
+
 % handle raw LiDAR data/stored data variable
 if ~isempty(regexpi(input_name, '.las')) % non-case-sensitive matching   
     data = readLASFile(input_name);
-    input_name(1:length(input_name)-4)
     save(input_name(1:length(input_name)-4), 'data');
-    dem = makeDEM(georef_info, data, cellsize);
+    [georef_info, dem] = makeDEM(data, cellsize);
     return;
 end
 

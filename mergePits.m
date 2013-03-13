@@ -28,7 +28,7 @@ first_pit = sort_pit_data(1,:);
 second_pit_ID = sort_pit_data{1, SPILLOVER_PIT_ID}; % ID of pit that the first pit will merge with
 % If the second pit is a non-0 pit, then complete the full merge operation
 % by creating and calculating the appropriate values for a new pit.
-if second_pit_ID ~= 0
+if second_pit_ID > 0
     % Identify second pit and new merged pit
     second_pit_row_idx = find(cell2mat(sort_pit_data(:, PIT_ID)) == second_pit_ID);
     % rename for convenience and clarity
@@ -101,26 +101,25 @@ if second_pit_ID ~= 0
 else
     % Find those cells that drain to the first pit and adjust the DEM to
     % represent filling the first pit.
-    puddle_dem(fill_pits == first_pit_ID & fill_dem < first_pit{SPILLOVER_ELEVATION}) = NaN;
+    puddle_dem(fill_pits == first_pit_ID & fill_dem <= first_pit{SPILLOVER_ELEVATION}) = NaN;
     fill_dem(fill_pits == first_pit_ID & fill_dem < first_pit{SPILLOVER_ELEVATION}) = first_pit{SPILLOVER_ELEVATION};
     
     % Replace first pit ID in the pits matrix with pit ID 0.
-    new_pit_ID = 0;
+    new_pit_ID = 0; %-1.*first_pit{PIT_ID};
     fill_pits(first_pit{ALL_INDICES}) = new_pit_ID;
 
     % Remove first pit from list.
     sort_pit_data(1, :) = [];
     
 end
-    % Reverse flow out of the overflowing pit so that flow_direction now
+    % Resolve flow out of the overflowing pit so that flow_direction now
     % correctly shows flow
-    %fill_flow_direction = reverseFlowOutOfPit(fill_flow_direction, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
+    fill_flow_direction = resolveFlatD8FlowDirection(fill_flow_direction, fill_dem, first_pit{ALL_INDICES}, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
     
     % All pits that spill over into the first or second pit now spill over
     % into the new pit (be it pit 0 or the new, merged pit)
     indices = cell2mat(sort_pit_data(:, SPILLOVER_PIT_ID)) == first_pit_ID | cell2mat(sort_pit_data(:,SPILLOVER_PIT_ID)) == second_pit_ID;
     sort_pit_data(indices, SPILLOVER_PIT_ID) = {new_pit_ID};
-    fill_flow_direction = resolveFlatD8FlowDirection(fill_flow_direction, fill_dem, first_pit{ALL_INDICES}, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
 
     % Resort the sort_pit_data matrix after the pit merger changes
     sort_pit_data = sortrows(sort_pit_data, SPILLOVER_TIME);
