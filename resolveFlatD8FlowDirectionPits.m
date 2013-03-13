@@ -1,4 +1,4 @@
-function[flow_direction] = resolveFlatD8FlowDirection(flow_direction, dem, all_pit_indices, pit_outlet_index, outlet_direction)
+function[flow_direction] = resolveFlatD8FlowDirectionPits(flow_direction, dem, all_pit_indices, pit_outlet_index, outlet_direction)
 % This is a general purpose function which resolves flat areas, including
 % those those found in the original DEM as well as those resulting from
 % filling/merging operations. In the case of flat areas resulting from
@@ -7,6 +7,8 @@ function[flow_direction] = resolveFlatD8FlowDirection(flow_direction, dem, all_p
 % flat pit bottoms in the original DEM, any cell may be chosen and the
 % direction of this cell should be specified as a -1 for pit resulting from
 % elevation rather than drainaga.
+
+[numrows, numcols] = size(flow_direction);
 
 % Get row and column indices of pit_outlet_cell
 [outlet_r, outlet_c] = ind2sub(size(flow_direction), pit_outlet_index);
@@ -50,12 +52,15 @@ while ~isempty(next_indices)
                 if x == 0 && y == 0 % skip center (current) cell
                     continue;
                 end
+                if r+y > numrows || r+y < 1 || c+x > numcols || c+x < 1
+                    continue; % skip neighbors outside the matrix range
+                end
                 neighbor_index = sub2ind(size(flow_direction), r+y, c+x);
                 % The neighbor should be part of the flat area to be
-                % resolved, but it shouldn't have alrady been redirected or
-                % already on the list of next_indices to be resolved.
+                % resolved, but it shouldn't have already been redirected
+                % or on the list of next_indices to be resolved.
                 if ismember(neighbor_index, indices_to_resolve) && ~ismember(neighbor_index, indices_resolved) && ~ismember(neighbor_index, redirected_indices)
-                    next_indices = [next_indices, neighbor_index]; % next_indices shouldn't exceed 8 cells so 
+                    next_indices = [next_indices, neighbor_index];
                     [alt_angle, alt_distance] = cart2pol(-x, -y); % Get the angle for a neighbor opposite the current neighbor (same as getting the 180 degree opposite angle to point the neighbor back towards current cell)
                     flow_direction(neighbor_index) = mod(alt_angle, 2*pi); % Make the angle a positive number so all angles are from 0 - 2pi
                     redirected_indices(redir_idx) = neighbor_index; 

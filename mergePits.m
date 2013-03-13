@@ -114,7 +114,7 @@ else
 end
     % Resolve flow out of the overflowing pit so that flow_direction now
     % correctly shows flow
-    fill_flow_direction = resolveFlatD8FlowDirection(fill_flow_direction, fill_dem, first_pit{ALL_INDICES}, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
+    fill_flow_direction = resolveFlatD8FlowDirectionPits(fill_flow_direction, fill_dem, first_pit{ALL_INDICES}, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
     
     % All pits that spill over into the first or second pit now spill over
     % into the new pit (be it pit 0 or the new, merged pit)

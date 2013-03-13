@@ -82,13 +82,13 @@ ylabel('Y (row)');
 title ('Original Flow Direction');
 %saveas(3, strcat([file_name,' FlowDirection.jpg']));
  
-figure(3);
-quiver(vector_field.X, vector_field.Y, vector_field.U, vector_field.V)
-axis equal
-set(gca,'YDir','reverse');
-xlabel('X (column)')
-ylabel('Y (row)')
-title ('Original Flow Direction')
+% figure(3);
+% quiver(vector_field.X, vector_field.Y, vector_field.U, vector_field.V)
+% axis equal
+% set(gca,'YDir','reverse');
+% xlabel('X (column)')
+% ylabel('Y (row)')
+% title ('Original Flow Direction')
 %saveas(3, strcat(file_name,'FlowDirection.jpg'));
 
 %% Flow Accumulation
