@@ -114,8 +114,20 @@ else
 end
     % Resolve flow out of the overflowing pit so that flow_direction now
     % correctly shows flow
-    fill_flow_direction = resolveFlatD8FlowDirectionPits(fill_flow_direction, fill_dem, first_pit{ALL_INDICES}, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
     
+%     'before'
+%     length(sort_pit_data)
+%     sum(sum(fill_flow_direction <0))
+     fill_flow_direction = resolveFlatD8FlowDirectionPits(fill_flow_direction, fill_dem, first_pit{ALL_INDICES}, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION});
+%     'after'
+%     length(sort_pit_data)
+%     sum(sum(fill_flow_direction <0))
+%     if length(sort_pit_data) ~= sum(sum(fill_flow_direction <0))
+%         [first_pit{PIT_ID}, second_pit{PIT_ID}, first_pit{PIT_OUTLET_INDEX}, first_pit{OUTLET_SPILLOVER_FLOW_DIRECTION}]        
+%         [r,c] = ind2sub(size(fill_flow_direction), first_pit{PIT_OUTLET_INDEX})
+%         pause
+%     end
+
     % All pits that spill over into the first or second pit now spill over
     % into the new pit (be it pit 0 or the new, merged pit)
     indices = cell2mat(sort_pit_data(:, SPILLOVER_PIT_ID)) == first_pit_ID | cell2mat(sort_pit_data(:,SPILLOVER_PIT_ID)) == second_pit_ID;

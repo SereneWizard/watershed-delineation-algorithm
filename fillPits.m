@@ -6,6 +6,18 @@ COLOR = 15;
 n = 6;
 fa = 5;
 
+% 'pit data length'
+% length(pit_data)
+% 'number of pits in flow direction'
+% sum(sum(flow_direction < 0))
+% sum(sum(flow_direction == -1))
+% sum(sum(flow_direction == -2))
+% sum(sum(flow_direction == -3))
+% sum(sum(flow_direction == -4))
+% if length(pit_data) ~= sum(sum(flow_direction < 0))
+%     pause
+% end
+
 % Initialize the products that will change as pits are filled.
 fill_dem = dem;
 puddle_dem = dem;
@@ -41,10 +53,15 @@ while sort_pit_data{1, SPILLOVER_TIME} < rainfall_duration
         end
     end
     
+%     'pit data length'
+%     length(sort_pit_data)
+%     'number of pits in flow direction'
+%     sum(sum(fill_flow_direction <0))
+    
     % call pit-merging/filling function
-    pre_merger_max_ID = current_max_ID;        
+    pre_merger_max_ID = current_max_ID;
     [fill_dem, puddle_dem, fill_flow_direction, fill_pits, sort_pit_data, current_max_ID] = mergePits(fill_dem, puddle_dem, fill_flow_direction, fill_pits, sort_pit_data, cellsize, current_max_ID);
-        
+    
     % Check to see if all pits have been merged.
     if isempty(sort_pit_data)
         break
@@ -60,8 +77,8 @@ while sort_pit_data{1, SPILLOVER_TIME} < rainfall_duration
         max_ID_row_idx = find(cell2mat(sort_pit_data(:, PIT_ID)) == current_max_ID);
         color_map(current_max_ID+1, :) = cell2mat(sort_pit_data(max_ID_row_idx, COLOR)); % +1 to account for Pit ID 0 which is not in the sort_pit_data list
     end
-    
-%     if sort_pit_data{1,SPILLOVER_TIME} > 0.02
+%     
+    if sort_pit_data{1,SPILLOVER_TIME} > 0.01
 %         if n == 4
 %             n = 6;
 %             fa = 5;
@@ -79,16 +96,17 @@ while sort_pit_data{1, SPILLOVER_TIME} < rainfall_duration
 %         ylabel('Y (row)');
 %         title(strcat(['Flow Accumulation: ', int2str(rainfall_duration),'-Hour, ',int2str(rainfall_depth),'-Inch Rainfall Event']))
 %         
-%         figure(n);
-%         imagesc(fill_pits);
-%         colormap(color_map(1:1+max(max(fill_pits)),:));
-%         axis equal;
-%         xlabel('X (column)');
-%         ylabel('Y (row)');
-%         title(strcat(['Pits: ', int2str(rainfall_duration),'-Hour, ',int2str(rainfall_depth),'-Inch Rainfall Event']))
-%     end
-
-cur_merger = cur_merger + 1;
+        figure(13);
+        imagesc(fill_pits);
+        colormap(color_map(1:1+max(max(fill_pits)),:));
+        axis equal;
+        %set(gca, 'position', [0 0 1 1], 'units', 'normalized')
+        xlabel('X (column)');
+        ylabel('Y (row)');
+        title(strcat(['Pits: ', int2str(rainfall_duration),'-Hour, ',int2str(rainfall_depth),'-Inch Rainfall Event']))
+%        saveas(13, strcat(input_name,'PitsFilled.jpg'))
+    end
+    cur_merger = cur_merger + 1;
 end
 
 figure(12);

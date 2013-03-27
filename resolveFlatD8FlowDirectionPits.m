@@ -11,7 +11,6 @@ function[flow_direction] = resolveFlatD8FlowDirectionPits(flow_direction, dem, a
 [numrows, numcols] = size(flow_direction);
 
 % Get row and column indices of pit_outlet_cell
-[outlet_r, outlet_c] = ind2sub(size(flow_direction), pit_outlet_index);
 spillover_elevation = dem(pit_outlet_index);
 indices_to_resolve = all_pit_indices(dem(all_pit_indices) == spillover_elevation);
 
@@ -26,7 +25,7 @@ redir_idx = 2;
 % Continue until there are no more next_indices to be resolved (only
 % adjacent, flat indices are located and added to the list of
 % next_indices).
-while ~isempty(next_indices)
+while nnz(ismember(indices_resolved, indices_to_resolve)) ~= 0
     % Update current_indices to be operated on from the next_indices in
     % line and clear the next_indices so they may be populated while
     % searching the neighbors of the current_indices.
@@ -71,7 +70,7 @@ while ~isempty(next_indices)
     end
 end
 end
-
+% [outlet_r, outlet_c] = ind2sub(size(flow_direction), pit_outlet_index);
 %                     % Attempt to direct this neighbor cell directly toward
 %                     % the outlet. Find the angle between the neighbor and
 %                     % the pit outlet, and round this angle to the nearest
