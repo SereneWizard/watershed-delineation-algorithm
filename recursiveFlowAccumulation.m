@@ -10,8 +10,7 @@ function [flow_accumulation] = recursiveFlowAccumulation(flow_accumulation, flow
 % calculations.
 flow_accumulation(cell) = 1;
 
-numrows = size(flow_direction, 1); % number of rows
-numcols = size(flow_direction, 2); % number of columns
+[numrows, numcols] = size(flow_direction);
 
 % convert to row (r) and column (c) indices
 [r, c] = ind2sub(size(flow_direction), cell); 

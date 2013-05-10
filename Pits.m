@@ -117,7 +117,8 @@ for list_idx = 1 : numel(list_of_pit_indices)
     % Filling has not begun
     current_pit{FILLED_VOLUME} = 0;
     
-    % Assign a random colormap value to this pit (avoiding dark colors).
+    % Assign a random colormap value to this pit (avoiding dark colors with
+    % RGB <.3).
     current_pit{COLOR} = 0.3 + (rand(1,3).*(1-.3));
     
     % place current_pit back into pit_data matrix

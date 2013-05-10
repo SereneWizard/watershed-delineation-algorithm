@@ -7,8 +7,7 @@ function [flow_accumulation] = flowAccumulation(flow_direction)
 % Preallocate flow accumulation matrix. 
 flow_accumulation = nan(size(flow_direction));
 
-numrows = size(flow_direction, 1); % number of rows
-numcols = size(flow_direction, 2); % number of columns
+[numrows, numcols] = size(flow_direction);
 
 for cell = 1: numel(flow_direction)
     [r, c] = ind2sub(size(flow_direction), cell); 

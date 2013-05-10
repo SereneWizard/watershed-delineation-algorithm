@@ -52,14 +52,15 @@ while ~isempty(next_indices)
                 end
                 
                 neighbor_index = sub2ind(size(flow_direction), r+y, c+x);
+                
                 % The neighbor should be the flat_spot_elevation and it
                 % should be marked as a flat area without a valid (0 - 2pi)
                 % flow_direction, but it shouldn't have already been
                 % redirected.
                 if dem(neighbor_index) == flat_spot_elevation && ~ismember(neighbor_index, redirected_indices) && flow_direction(neighbor_index) == -4
                     next_indices = [next_indices, neighbor_index];
-                    [alt_angle, alt_distance] = cart2pol(-x, -y); % Get the angle for a neighbor opposite the current neighbor (same as getting the 180 degree opposite angle). This angle will be used to point the neighbor back towards current cell.
-                    flow_direction(neighbor_index) = mod(alt_angle, 2*pi); % Make the angle a positive number so all angles are from 0 - 2pi
+                    [new_angle, new_distance] = cart2pol(-x, -y); % Get the angle for a neighbor opposite the current neighbor (same as getting the 180 degree opposite angle). This angle will be used to point the neighbor back towards current cell.
+                    flow_direction(neighbor_index) = mod(new_angle, 2*pi); % Make the angle a positive number so all angles are from 0 - 2pi
                     redirected_indices = [redirected_indices, neighbor_index];
                 end
             end

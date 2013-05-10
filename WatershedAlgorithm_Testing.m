@@ -2,7 +2,7 @@ clear all
 close all
 %Inputs
 cellsize = 3; % DEM cellsize in meters
-rainfall_depth = 300; % in inches
+rainfall_depth = 200; % in inches
 rainfall_duration = 24; % in hours
 
 intensity = (rainfall_depth*0.0254)/rainfall_duration; % convert depth to meters, and calculate intensity in meters per hour
@@ -12,10 +12,10 @@ drainage_off = 0; % Turn drainage on or off.  drainage_off = 1 means drainage IS
 input_name = 'Lowe115';
 % Home128, AaronFieldSmall,BuckmasterRossville, DryCow61, Mont, HellHole,
 % CalowayCoondogMacy, CalowayChurchAccessRoad, CalowayBankRoadSouthMuck!,
-% Smith30, Horn234!, LakeAssociation20, Zone80, BootsPresselGrahamHome,
-% Lowe115
+% Smith30, Horn234, LakeAssociation20, Zone80, BootsPresselGrahamHome,
+% Lowe115, Jack52, PalmerDenver,
 
-%Determine input format and create DEM.
+% Determine input format and create DEM.
 [georef_info, dem, drainage, flow_direction_key, flow_accumulation_key, pits_key, fill_dem_key, fill_flow_direction_key, fill_flow_accumulation_key, fill_pits_key, perform_error_checks, cellsize] = parseInputFormat(input_name, cellsize);
 
 %% Display DEM from data matrix of raw LiDAR Data
@@ -89,7 +89,20 @@ title ('Original Flow Direction')
 %saveas(3, strcat(input_name,'FlowDirection.jpg'));
 
 %% Flow Accumulation
+onetic = tic;
 flow_accumulation = flowAccumulation(flow_direction);
+onetoc_time = toc(onetic)
+
+twotic = tic;
+flow_accumulation2 = nonRecursiveFlowAccumulationNEW(flow_direction, dem, flow_accumulation);
+twotoc_time = toc(twotic)
+
+tic = tic;
+flow_accumulation3 = nonrecursiveFlowAccumulation_new_two(flow_direction, flow_accumulation);
+toc_time = toc(tic)
+
+
+%sum(flow_accumulation2 == flow_accumulation)
 
 if perform_error_checks
     error = numel(flow_accumulation) - sum(sum(flow_accumulation == flow_accumulation_key));
@@ -137,7 +150,7 @@ set(gca, 'position', [0 0 1 1], 'units', 'normalized')
 saveas(6, strcat(input_name,'PitIDs.jpg'));
 
 %% Fill Pits
-[fill_dem, puddle_dem, fill_flow_direction, fill_pits, sort_pit_data] = fillPits(dem, flow_direction, pits, pit_data, rainfall_duration, rainfall_depth, cellsize, color_map);
+[fill_dem, puddle_dem, fill_flow_direction, fill_pits, sort_pit_data] = fillPits(dem, flow_direction, pits, pit_data, rainfall_duration, rainfall_depth, cellsize, color_map, georef_info, input_name);
 
 geotiffwrite(strcat(input_name, 'FillDEM', '.tif'), fill_dem, georef_info,'CoordRefSysCode', 26916);
 geotiffwrite(strcat(input_name, 'FillFlowDir', '.tif'), fill_flow_direction, georef_info,'CoordRefSysCode', 26916);

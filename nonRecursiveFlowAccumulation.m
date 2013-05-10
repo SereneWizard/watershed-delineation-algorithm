@@ -1,48 +1,47 @@
-function[flow_accumulation] = nonRecursiveFlowAccumulation(flow_direction)
+function[flow_accumulation] = nonrecursiveFlowAccumulation(flow_direction, cell)
 
-flow_accumulation = nan(size(flow_direction));
-indices = nan(size(flow_direction));
-
-for cell = 1 : numel(flow_accumulation)
-    if flow_direction(cell) < 0
-        current_network_indices = [cell];
-        indices(cell) = [cell];
-        while ~isempty(current_network_indices)
-            for idx = 1 : current_network_indices
-                no_neighbor_check = 0;
-                new_link = 0;
-                for x = -1 : 1
-                    for y = -1 : 1
-                        neighbor_cell = sub2ind(size(flow_direction), r+y, c+x);
-                        if flow_direction(neighbor_cell) == mod(cart2pol(x, y) - pi, 2*pi)
-                            no_neighbor_check = 1;
-                            for n = 1 : numel(current_network_indices)
-                                indices(current_network_indices(n)) = [indices(current_network_indices(n)), neighbor_cell];
-                            end
-                            if new_link == 0
-                                current_network_indices = [current_network_indices, neighbor_cell];
-                            elseif new_link == 1
-                                next_indices = [next_indices, neighbor_cell];
-                            end
-                            new_link = 1;
-                        end
-                    end
+for idx = 1 : numel(flow_direction);
+    listOfPoints = [cell];
+    
+    i = 1;
+    
+    while i < length(listOfPoints) + 1
+        p = listOfPoints(i);
+        [r, c] = ind2sub(size(flow_direction), p);
+        for x = -1 : 1 % loop through neighboring cells
+            for y = -1 : 1
+                if x == 0 && y ==0
+                    continue; % skip center (target) cell of 3x3 neighborhood
                 end
-                % If no neighbors were directed toward the current cell,
-                % the current cell should be removed from the list_of_
-                % indices_to_check because it is at a ridge.
-                if no_neighbor_check == 0
-                    current_network_indices(idx) = [];
+                if r+y > numrows || r+y < 1 || c+x > numcols || c+x < 1
+                    continue; % skip neighbors outside the matrix range
                 end
                 
-                % Traverse the list of indices and remove any indices that
-                % have had their entire network searched already
-                for i =  numel(current_network_indices) : -1 : 1
-                    if sum(ismember(indices(current_network_indices(i)), current_network_indices)) == 0
-                        current_network_indices(idx) = [];
-                    end
+                % check if the flow direction of the neighbor points toward the
+                % center cell (opposite the angle of center to neighbor)
+                if flow_direction(r+y, c+x) == mod(cart2pol(x, y)-pi, 2*pi)
+                    neighbor_index = sub2ind(size(flow_direction), r+y, c+x);
+                    listOfPoints = [listOfPoints, neighbor_index];
                 end
             end
         end
+        i = i + 1;
     end
+    flow_accumulation(idx) = length(listOfPoints);
+end
+
+for idx = 1 : numel(flow_direction)
+    [r, c] = ind2sub(size(flow_accumulation), idx);
+    if r == numrows || r == 1 || c == numcols || c == 1
+        continue;
+    end
+    if flow_accumulation(idx) ~= check(idx)
+        if isnan(flow_accumulation(idx)) && isnan(check(idx))
+            continue;
+        else
+            flow_accumulation(idx);
+        end
+    end
+end
+
 end

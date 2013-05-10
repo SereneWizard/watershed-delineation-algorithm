@@ -34,8 +34,6 @@ for current_cell = 1 : numel(flow_direction)
         continue;
     end
     min_slope = NaN;
-    first_zero_slope_neighbor = NaN;
-    
     % Verify the current_cell hasn't previously been set. May've been set
     % in border or drainage conditions, or by resolveFlatD8FlowDirection if
     % a flat area is located.
@@ -53,12 +51,12 @@ for current_cell = 1 : numel(flow_direction)
                 [angle, distance] = cart2pol(x,y);
                 slope = (dem(r+y, c+x) - dem(r,c))/distance;
                 
-                % Keep track of interesting slopes
-                if (slope == min_slope) % how often do equivalent slopes occur?
-                    equal_slopes = equal_slopes + 1;
-                elseif (slope < 0) % how often do negative slopes occur?
-                    negative_slopes = negative_slopes + 1;
-                end
+%                 % Keep track of interesting slopes
+%                 if (slope == min_slope) % how often do equivalent slopes occur?
+%                     equal_slopes = equal_slopes + 1;
+%                 elseif (slope < 0) % how often do negative slopes occur?
+%                     negative_slopes = negative_slopes + 1;
+%                 end
                 
                 % Maintain current minimum slope
                 if (isnan(min_slope) || slope <= min_slope) % nan on first iteration
@@ -66,32 +64,16 @@ for current_cell = 1 : numel(flow_direction)
                     % Record for that cell of the flow_direction matrix the
                     % angle of the new minimum slope. Taking the modulo of the
                     % angle/2*pi results in a positive angle from 0 to 2 pi
-                    % radians rather than allowing negative angles.
+                    % radians rather than allowing equivalent negative angles.
                     flow_direction(current_cell) = mod(angle, 2*pi);
-                                        
-                    % If the minimum slope is 0 (flat pit bottom), BUT the
-                    % neighbor which is of the same elevation has a known
-                    % non-pit flow direction (neither along a border(NaN) nor a
-                    % pit or yet undetermined(-3:-1)), then allow the current
-                    % cell to flow to the neighbor cell. Because the cells are
-                    % not visited twice, if the cell was first identified as a
-                    % pit, then it will remain a pit such that an infinite loop
-                    % of two cells flowing into one another will be avoided.
-                    % Record the first zero slope neighbor encountered and use
-                    % that first neighbor as the direction to take if the
-                    % minimum slope turns out to be 0.
-                    %                 if min_slope == 0 && flow_direction(r+y, c+x) > -2 && isnan(first_zero_slope_neighbor)
-                    %                     first_zero_slope_neighbor = mod(angle, 2*pi);
-                    %                 end
                 end
             end
         end
 
         % Identify flat areas that have no neighbors lower, but have
         % neighbors the same elevation.
-        if min_slope == 0 %&& ~isnan(first_zero_slope_neighbor)
-            %flow_direction(current_element) = first_zero_slope_neighbor;
-            flow_direction(current_cell) = -4;
+        if min_slope == 0
+            flow_direction(current_cell) = -1;
        elseif min_slope >= 0
             flow_direction(current_cell) = -1;
             % The following serves to group adjacent multi-cell flat
@@ -102,9 +84,9 @@ for current_cell = 1 : numel(flow_direction)
 end
 
 
-for idx = 1 : numel(flow_direction)
-    if flow_direction(idx) == -4
-        flow_direction = resolveFlatD8FlowDirection(flow_direction, dem, idx, -1);
-    end
-end
+% for idx = 1 : numel(flow_direction)
+%     if flow_direction(idx) == -4
+%         flow_direction = resolveFlatD8FlowDirection(flow_direction, dem, idx, -1);
+%     end
+% end
 end
